@@ -55,7 +55,7 @@ def overlap(car1, car2, car_len_rad, car_wid_rad):
 '''
 Plots the road, all cars, receivers
 '''
-def plot_road(cars, car_wid_rad, car_len_rad, xMin, xMax, yMin, yMax, receivers, t):
+def plot_road(num_lanes, lane_width, cars, car_wid_rad, car_len_rad, xMin, xMax, yMin, yMax, receivers, t):
     extra_plot_y = 10  # extra distance for plot window
     extra_plot_x = 25
 
@@ -78,12 +78,14 @@ def plot_road(cars, car_wid_rad, car_len_rad, xMin, xMax, yMin, yMax, receivers,
     plt.ylabel("y (m)")
     plt.title('Time = '+str(np.around(t,decimals=3)))
     plt.xlim([xMin - car_len_rad, xMax + car_len_rad+extra_plot_x])
-    plt.ylim([yMin - car_wid_rad-extra_plot_y, yMax + car_wid_rad+extra_plot_y])
+    plt.ylim([yMin - car_wid_rad-extra_plot_y, yMax + car_wid_rad+extra_plot_y + num_lanes*lane_width])
     plt.legend(['Car Centroids', 'Car Edges', 'Receivers', 'Transmitters'])
     for car in cars:
         plt.fill(car.corners[:, 0], car.corners[:, 1], c='b')
-    plt.scatter(np.linspace(xMin-car_len_rad, xMax + car_len_rad + extra_plot_x), np.ones(50)*(yMax+car_wid_rad), marker='_', c='k')
-    plt.scatter(np.linspace(xMin - car_len_rad, xMax + car_len_rad+extra_plot_x), np.ones(50)*(yMin - car_wid_rad), marker='_', c='k')
+
+    for i in range(num_lanes):
+        plt.scatter(np.linspace(xMin-car_len_rad, xMax + car_len_rad + extra_plot_x), np.ones(50)*(i*lane_width), marker='_', c='k')
+        plt.scatter(np.linspace(xMin - car_len_rad, xMax + car_len_rad+extra_plot_x), np.ones(50)*((i+1)*lane_width), marker='_', c='k')
     plt.show()
 
 '''
@@ -111,7 +113,7 @@ class Car:
 
 
 '''
-returns the centroids and bounding boxes of all inital cars. Does not create cars that are off the road or overlapping
+returns the centroids and bounding boxes of all initial cars. Does not create cars that are off the road or overlapping
 with other cars
 '''
 def init_cars(car_len_rad, car_wid_rad, xMin, xMax, yMin, yMax, freq, tire_corner_dist, tire_thickness, rim_diameter):
@@ -218,10 +220,12 @@ if __name__== "__main__":
     car_len_rad = 4.56 / 2.  # 2013 subaru forester length in meters
     car_wid_rad = 2.006 / 2.  # width in meters
     # Simulation window parameters
+    num_lanes = 3
+    lane_width = 4
     xMin = 0 + car_len_rad  # road start
     xMax = 25 - car_len_rad  # road end
     yMin = 0 + car_wid_rad  # road bottom
-    yMax = 4 - car_wid_rad  # road top
+    yMax = lane_width - car_wid_rad  # road top
 
     # define Markov process parameters
     t_steps = 10  # number of time steps.
@@ -235,15 +239,18 @@ if __name__== "__main__":
     rim_diameter = 0.381
 
     # initialize cars
-    cars = init_cars(car_len_rad, car_wid_rad, xMin, xMax, yMin, yMax, freq, tire_corner_dist, tire_thickness, rim_diameter)
+    cars = []
+    for i in range(num_lanes):
+        cars.extend(init_cars(car_len_rad, car_wid_rad, xMin, xMax, yMin+i*lane_width, yMax+i*lane_width, freq,
+                              tire_corner_dist, tire_thickness, rim_diameter))
 
     # manual placement of receivers, [3, 2] array
     receiver_curb_dist = 1  # how many meters offroad the receivers are
     receivers = np.array([[(xMax-xMin+2*car_len_rad) / 2., yMin-car_wid_rad-receiver_curb_dist],
-                          [xMin, yMax+car_wid_rad+receiver_curb_dist],
-                          [xMax, yMax+car_wid_rad+receiver_curb_dist]])
+                          [xMin, (yMax+car_wid_rad)*num_lanes+receiver_curb_dist],
+                          [xMax, (yMax+car_wid_rad)*num_lanes+receiver_curb_dist]])
 
-    # initialize RSS data matrix
+    # initialize machine learning input/output data matrix
     num_transmitters = 0
     for car in cars:
         num_transmitters += len(car.transmitters)
@@ -269,5 +276,5 @@ if __name__== "__main__":
         cars = MP(cars, freq, time[-1]/t_steps, tire_corner_dist, tire_thickness, rim_diameter, time[i])
 
         # plot road, cars, recievers
-        plot_road(cars, car_wid_rad, car_len_rad, xMin, xMax, yMin, yMax, receivers, time[i])
+        plot_road(num_lanes, lane_width, cars, car_wid_rad, car_len_rad, xMin, xMax, yMin, yMax, receivers, time[i])
 
