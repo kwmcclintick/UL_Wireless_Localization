@@ -6,36 +6,100 @@ from itertools import combinations
 import numpy as np
 import scipy.stats
 import matplotlib.pyplot as plt
-
+import math
 
 
 '''
-check to see if the area of any car obstructs the direct path from a tire-receiver pair 
+check to see if the area of any car obstructs the direct path from a tire-receiver pair , returns True if LOS, False if NLOS
 '''
-def LOS(transmitter, receiver, cars):
-    #########################
-    # YOUR CODE HERE
-    #########################
-    return True
+def LOS(transmitter, receiver, cars): #Assumes transmitter and receiver are arrays containing x,y coordinates.
+
+    tx2d = [] #use only 2D location for LOS calculation
+    tx2d.append(transmitter[0])
+    tx2d.append(transmitter[1])
+    tx2d = np.array(tx2d)
+
+    a = [tx2d, receiver] #Tx Rx Vector
+
+    #for each car
+    for n in range(len(cars)):
+
+        if np_seg_intersect(a, [cars[n].corners[0], cars[n].corners[3]]): #Check bottom left to top right diagonal, if they intersect LOS is false
+            return False
+        elif np_seg_intersect(a, [cars[n].corners[1], cars[n].corners[2]]): #Check top left to bottom right diagonal, if they intersect LOS is false
+            return False
+    return True #LOS if no intersects
+
+
+'''
+Supporting functions for LOS function
+Sources:
+# https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect/36416304#36416304
+# https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect/565282#565282
+# http://www.codeproject.com/Tips/862988/Find-the-intersection-point-of-two-line-segments
+'''
+def np_perp( a ) :
+    b = np.empty_like(a)
+    b[0] = a[1]
+    b[1] = -a[0]
+    return b
+
+def np_cross_product(a, b):
+    return np.dot(a, np_perp(b))
+
+def np_seg_intersect(a, b):
+    considerCollinearOverlapAsIntersect = False
+    r = a[1] - a[0]
+    s = b[1] - b[0]
+    v = b[0] - a[0]
+    num = np_cross_product(v, r)
+    denom = np_cross_product(r, s)
+    # If r x s = 0 and (q - p) x r = 0, then the two lines are collinear.
+    if np.isclose(denom, 0) and np.isclose(num, 0):
+        # 1. If either  0 <= (q - p) * r <= r * r or 0 <= (p - q) * s <= * s
+        # then the two lines are overlapping,
+        if(considerCollinearOverlapAsIntersect):
+            vDotR = np.dot(v, r)
+            aDotS = np.dot(-v, s)
+            if (0 <= vDotR  and vDotR <= np.dot(r,r)) or (0 <= aDotS  and aDotS <= np.dot(s,s)):
+                return True
+        # 2. If neither 0 <= (q - p) * r = r * r nor 0 <= (p - q) * s <= s * s
+        # then the two lines are collinear but disjoint.
+        # No need to implement this expression, as it follows from the expression above.
+        return False
+    if np.isclose(denom, 0) and not np.isclose(num, 0):
+        # Parallel and non intersecting
+        return False
+    u = num / denom
+    t = np_cross_product(v, s) / denom
+    if u >= 0 and u <= 1 and t >= 0 and t <= 1:
+        res = b[0] + (s*u)
+        return True
+    # Otherwise, the two line segments are not parallel but do not intersect.
+    return False
 
 
 '''
 compute the distance of a ray in meters given its transmitting tire and receiving road side radio
 '''
 def ray_length(transmitter, receiver):
-    #########################
-    # YOUR CODE HERE
-    #########################
+    tx2d = [] #use only 2D location for distance calculation since no Rx height is available
+    tx2d.append(transmitter[0])
+    tx2d.append(transmitter[1])
+    tx2d = np.array(tx2d)
+
+    distance = math.sqrt((receiver[0]-tx2d[0])**2 + (receiver[1]-tx2d[1])**2)
     return distance
 
 
 '''
 Compute the RSS of a signal sent from a transmitter to a receiver
 '''
-def compute_rss(transmitter, receiver, LOS):
-    #########################
-    # YOUR CODE HERE
-    #########################
+def compute_rss(distance, LOS):
+    if LOS:
+        RSS = 5.2575 - 22.7386*math.log(distance,10)
+    else:
+        RSS = 3.5 - 22.7386*math.log(distance,10)
     return RSS
 
 
@@ -87,6 +151,7 @@ def plot_road(num_lanes, lane_width, cars, car_wid_rad, car_len_rad, xMin, xMax,
         plt.scatter(np.linspace(xMin-car_len_rad, xMax + car_len_rad + extra_plot_x), np.ones(50)*(i*lane_width), marker='_', c='k')
         plt.scatter(np.linspace(xMin - car_len_rad, xMax + car_len_rad+extra_plot_x), np.ones(50)*((i+1)*lane_width), marker='_', c='k')
     plt.show()
+
 
 '''
 A car has a center (x,y) a velocity (x,y), four corners ((x,y),(x,y),(x,y),(x,y)), and some set of transmitters
@@ -180,7 +245,6 @@ def init_cars(car_len_rad, car_wid_rad, xMin, xMax, yMin, yMax, freq, tire_corne
     return car_list
 
 
-
 '''
 Updates the position of all cars, their edges, and their transmitters
 '''
@@ -254,27 +318,39 @@ if __name__== "__main__":
     num_transmitters = 0
     for car in cars:
         num_transmitters += len(car.transmitters)
-    RSS = np.zeros(shape=(len(time), num_transmitters * len(receivers)))
-    true_loc = np.zeros(shape=(len(time), num_transmitters))
+    RSS = np.zeros(shape=(len(receivers), num_transmitters * len(time)))
+    true_loc = np.zeros(shape=(2, num_transmitters * len(time))) #2 dimensions since no rx height
 
     # loop over time
     for i in range(len(time)):
-
         # Compute RSS of each transmit receive pair
-        #########################
-        # YOUR CODE HERE
-        # for transmit_receive in ...:
-        #      los = LOS(transmitter, receiver, cars)
-        #      distance = ray_length(transmitter, receiver)
-        #      RSS[i,...] = compute_rss(transmitter, receiver, LOS)
-        #      true_loc[i,...] =
-        #########################
+        for j in range(len(receivers)):
+            for n in range(len(cars)):
+                for m in range(len(car.transmitters)):
+                    k = (num_transmitters * i) + (len(car.transmitters) * n) + m #index for recording RSS values within a receiver row. Will be sorted by Time, then Car within that, then Tx/Tire within that
+                    los = LOS(cars[n].transmitters[m], receivers[j], cars)
+                    distance = ray_length(cars[n].transmitters[m], receivers[j])
+                    RSS[j,k] = compute_rss(distance, los)
+                    true_loc[0, k] = cars[n].transmitters[m][0]
+                    true_loc[1, k] = cars[n].transmitters[m][1]
 
-
-
-        # move simulation one time step forward
-        cars = MP(cars, freq, time[-1]/t_steps, tire_corner_dist, tire_thickness, rim_diameter, time[i])
+                    # print(k)
+                    # print(true_loc[0, k])
+                    # print(true_loc[1, k])
+                    # print(receivers[j])
+                    # print(los)
+                    # print(distance)
+                    # print(RSS[j,k])
 
         # plot road, cars, recievers
         plot_road(num_lanes, lane_width, cars, car_wid_rad, car_len_rad, xMin, xMax, yMin, yMax, receivers, time[i])
+        # move simulation one time step forward
+        cars = MP(cars, freq, time[-1]/t_steps, tire_corner_dist, tire_thickness, rim_diameter, time[i])
+
+    # print("true locations")
+    # print(true_loc)
+    # print("RSS Values")
+    # print(RSS)
+
+
 
