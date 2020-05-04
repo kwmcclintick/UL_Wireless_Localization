@@ -96,10 +96,19 @@ def ray_length(transmitter, receiver):
 Compute the RSS of a signal sent from a transmitter to a receiver
 '''
 def compute_rss(distance, LOS):
+    #Parameters
+    P0 = -59.78 #dBm
+    txPwrVar = 4 #dB
+    LOS_grad = -2.2058
+    NLOS_grad = -3.5
+    #Account for variation in Tx Power
+    norm = np.random.normal(0, 1)
+    P0var = P0 + norm * txPwrVar #Tx Power varies by about 4 dB
+    #Calculate RSS
     if LOS:
-        RSS = -59.78 - 2.2058*math.log(distance,10)
+        RSS = P0var + LOS_grad*math.log(distance,10)
     else:
-        RSS = -59.78 - 3.5*math.log(distance,10)
+        RSS = P0var + NLOS_grad*math.log(distance,10)
     return RSS
 
 
