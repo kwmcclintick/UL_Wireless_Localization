@@ -97,9 +97,9 @@ Compute the RSS of a signal sent from a transmitter to a receiver
 '''
 def compute_rss(distance, LOS):
     if LOS:
-        RSS = 5.2575 - 22.7386*math.log(distance,10)
+        RSS = -59.78 - 2.2058*math.log(distance,10)
     else:
-        RSS = 3.5 - 22.7386*math.log(distance,10)
+        RSS = -59.78 - 3.5*math.log(distance,10)
     return RSS
 
 
