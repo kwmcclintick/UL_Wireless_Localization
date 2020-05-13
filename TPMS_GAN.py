@@ -20,8 +20,9 @@ from keras.optimizers import Adam
 from keras.utils.generic_utils import Progbar
 import numpy as np
 
-np.random.seed(1337)
+
 num_classes = 10
+p = 784
 
 
 def build_generator(latent_size):
@@ -29,18 +30,18 @@ def build_generator(latent_size):
     # label drawn from P_c, to image space (..., 28, 28, 1)
     cnn = Sequential()
 
-    cnn.add(Dense(3 * 3 * 384, input_dim=latent_size, activation='relu'))
+    cnn.add(Dense(3 * 3 * 384, input_dim=latent_size, activation='tanh'))
     cnn.add(Reshape((3, 3, 384)))
 
     # upsample to (7, 7, ...)
     cnn.add(Conv2DTranspose(192, 5, strides=1, padding='valid',
-                            activation='relu',
+                            activation='tanh',
                             kernel_initializer='glorot_normal'))
     cnn.add(BatchNormalization())
 
     # upsample to (14, 14, ...)
     cnn.add(Conv2DTranspose(96, 5, strides=2, padding='same',
-                            activation='relu',
+                            activation='tanh',
                             kernel_initializer='glorot_normal'))
     cnn.add(BatchNormalization())
 
@@ -48,22 +49,23 @@ def build_generator(latent_size):
     cnn.add(Conv2DTranspose(1, 5, strides=2, padding='same',
                             activation='tanh',
                             kernel_initializer='glorot_normal'))
+    # flatten to a 1xp
+    cnn.add(Reshape((p, 1, 1)))
 
     # this is the z space commonly referred to in GAN papers
-    latent = Input(shape=(latent_size, ))
+    latent = Input(shape=(latent_size,))
 
     # this will be our label
-    image_class = Input(shape=(1,), dtype='int32')
-
+    label = Input(shape=(1,), dtype='float64')
     cls = Embedding(num_classes, latent_size,
-                    embeddings_initializer='glorot_normal')(image_class)
+                    embeddings_initializer='glorot_normal')(label)
 
     # hadamard product between z-space and a class conditional embedding
     h = layers.multiply([latent, cls])
 
     fake_image = cnn(h)
 
-    return Model([latent, image_class], fake_image)
+    return Model([latent, label], fake_image)
 
 
 def build_discriminator():
@@ -72,7 +74,7 @@ def build_discriminator():
     cnn = Sequential()
 
     cnn.add(Conv2D(32, 3, padding='same', strides=2,
-                   input_shape=(28, 28, 1)))
+                   input_shape=(num_classes, 1, 1)))
     cnn.add(LeakyReLU(0.2))
     cnn.add(Dropout(0.3))
 
@@ -90,7 +92,7 @@ def build_discriminator():
 
     cnn.add(Flatten())
 
-    image = Input(shape=(28, 28, 1))
+    image = Input(shape=(p, 1, 1))
 
     features = cnn(image)
 
@@ -110,7 +112,7 @@ def build_discriminator():
 
 if __name__ == '__main__':
     # batch and latent size taken from the paper
-    epochs = 10
+    epochs = 1
     batch_size = 100
     latent_size = 100
 
@@ -150,12 +152,12 @@ if __name__ == '__main__':
 
     # get our mnist data, and force it to be of shape (..., 28, 28, 1) with
     # range [-1, 1]
-    (x_train, y_train), (x_test, y_test) = mnist.load_data()
+    (x_train, y_train), (x_test, y_test) = mnist.load_data()  # (60000, 28, 28) train, (10000, 28, 28) test
     x_train = (x_train.astype(np.float32) - 127.5) / 127.5
-    x_train = np.expand_dims(x_train, axis=-1)
-
+    x_train = np.expand_dims(np.expand_dims(x_train.reshape((60000, 784)), axis=-1), axis=-1)
     x_test = (x_test.astype(np.float32) - 127.5) / 127.5
-    x_test = np.expand_dims(x_test, axis=-1)
+    x_test = np.expand_dims(np.expand_dims(x_test.reshape((10000, 784)), axis=-1), axis=-1)
+
 
     num_train, num_test = x_train.shape[0], x_test.shape[0]
 
@@ -303,6 +305,10 @@ if __name__ == '__main__':
         # get a batch to display
         generated_images = generator.predict(
             [noise, sampled_labels], verbose=0)
+        print('sampled labels: ',sampled_labels)
+        np.save('novel_images', generated_images)
+        print('generated images: ',generated_images)
+        np.save('novel_labels',sampled_labels)
 
         # prepare real images sorted by class label
         real_labels = y_train[(epoch - 1) * num_rows * num_classes:

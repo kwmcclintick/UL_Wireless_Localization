@@ -99,6 +99,7 @@ def compute_rss(distance, LOS):
     #Parameters
     P0 = -59.78 #dBm
     txPwrVar = 4 #dB
+    # txPwrVar = 0
     LOS_grad = -2.2058
     NLOS_grad = -3.5
     #Account for variation in Tx Power
@@ -106,9 +107,10 @@ def compute_rss(distance, LOS):
     P0var = P0 + norm * txPwrVar #Tx Power varies by about 4 dB
     #Calculate RSS
     if LOS:
-        RSS = P0var + LOS_grad*math.log(distance,10)
+        RSS = P0var + 10*LOS_grad*math.log(distance,10)
     else:
-        RSS = P0var + NLOS_grad*math.log(distance,10)
+        RSS = P0var + 10*NLOS_grad*math.log(distance,10)
+    # RSS = P0var + 10 * LOS_grad * math.log(distance, 10)
     return RSS
 
 
@@ -293,16 +295,16 @@ if __name__== "__main__":
     car_len_rad = 4.56 / 2.  # 2013 subaru forester length in meters
     car_wid_rad = 2.006 / 2.  # width in meters
     # Simulation window parameters
-    num_lanes = 3
+    num_lanes = 2
     lane_width = 4
     xMin = 0 + car_len_rad  # road start
-    xMax = 25 - car_len_rad  # road end
+    xMax = 15 - car_len_rad  # road end
     yMin = 0 + car_wid_rad  # road bottom
     yMax = lane_width - car_wid_rad  # road top
 
     # define Markov process parameters
-    t_steps = 10  # number of time steps.
-    time = np.linspace(0, 1., t_steps)  # 26.822 m/s is 60 MPH
+    t_steps = 1000  # number of time steps.
+    time = np.linspace(0, 0.1, t_steps)  # 26.822 m/s is 60 MPH
 
     # TPMS parameters
     tire_corner_dist = 1
@@ -317,11 +319,21 @@ if __name__== "__main__":
         cars.extend(init_cars(car_len_rad, car_wid_rad, xMin, xMax, yMin+i*lane_width, yMax+i*lane_width, freq,
                               tire_corner_dist, tire_thickness, rim_diameter))
 
-    # manual placement of receivers, [3, 2] array
+    # # manual placement of receivers, [3, 2] array
     receiver_curb_dist = 1  # how many meters offroad the receivers are
     receivers = np.array([[(xMax-xMin+2*car_len_rad) / 2., yMin-car_wid_rad-receiver_curb_dist],
                           [xMin, (yMax+car_wid_rad)*num_lanes+receiver_curb_dist],
                           [xMax, (yMax+car_wid_rad)*num_lanes+receiver_curb_dist]])
+
+    # num_recs = 3
+    #
+    # a = np.expand_dims(np.linspace(xMin, xMax, num_recs), axis=1)
+    # b = np.array((yMin - car_wid_rad - receiver_curb_dist) * np.ones(shape=(num_recs,1)))
+    # receivers = np.array(np.concatenate((a,b), axis=1))
+    #
+    # c = np.array(((yMax+car_wid_rad)*num_lanes+receiver_curb_dist) * np.ones(shape=(num_recs,1)))
+    # receivers_top = np.array(np.concatenate((a,c), axis=1))
+    # receivers = np.concatenate((receivers, receivers_top), axis=0)
 
     # initialize machine learning input/output data matrix
     num_transmitters = 0
@@ -352,7 +364,8 @@ if __name__== "__main__":
                     # print(RSS[j,k])
 
         # plot road, cars, recievers
-        plot_road(num_lanes, lane_width, cars, car_wid_rad, car_len_rad, xMin, xMax, yMin, yMax, receivers, time[i])
+        if i == 1:
+            plot_road(num_lanes, lane_width, cars, car_wid_rad, car_len_rad, xMin, xMax, yMin, yMax, receivers, time[i])
         # move simulation one time step forward
         cars = MP(cars, freq, time[-1]/t_steps, tire_corner_dist, tire_thickness, rim_diameter, time[i])
 
@@ -360,6 +373,9 @@ if __name__== "__main__":
     # print(true_loc)
     # print("RSS Values")
     # print(RSS)
+
+    np.save('X', RSS)
+    np.save('Y',true_loc)
 
 
 
