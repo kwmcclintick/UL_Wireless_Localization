@@ -1,0 +1,11 @@
+clc
+clear
+
+mat = dir('*.mat');
+for q = 1:length(mat)
+    test = table2array(load(mat(q).name).wheel_pos_data(:,3:4));
+    
+end
+
+
+

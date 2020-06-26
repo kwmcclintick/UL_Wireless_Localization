@@ -19,10 +19,13 @@ from keras.models import Sequential, Model
 from keras.optimizers import Adam
 from keras.utils.generic_utils import Progbar
 import numpy as np
+import keras
+from os.path import isfile, join
+from os import listdir
 
-
+import scipy.io as sio
 num_classes = 10
-p = 784
+p = 3
 
 
 def build_generator(latent_size):
@@ -30,25 +33,10 @@ def build_generator(latent_size):
     # label drawn from P_c, to image space (..., 28, 28, 1)
     cnn = Sequential()
 
-    cnn.add(Dense(3 * 3 * 384, input_dim=latent_size, activation='tanh'))
-    cnn.add(Reshape((3, 3, 384)))
-
-    # upsample to (7, 7, ...)
-    cnn.add(Conv2DTranspose(192, 5, strides=1, padding='valid',
-                            activation='tanh',
-                            kernel_initializer='glorot_normal'))
-    cnn.add(BatchNormalization())
-
-    # upsample to (14, 14, ...)
-    cnn.add(Conv2DTranspose(96, 5, strides=2, padding='same',
-                            activation='tanh',
-                            kernel_initializer='glorot_normal'))
-    cnn.add(BatchNormalization())
-
-    # upsample to (28, 28, ...)
-    cnn.add(Conv2DTranspose(1, 5, strides=2, padding='same',
-                            activation='tanh',
-                            kernel_initializer='glorot_normal'))
+    # cnn.add(keras.layers.Conv2DTranspose(filters=4, kernel_size=(2, 1), input_shape=(latent_size,), padding='same', activation='relu'))
+    # cnn.add(keras.layers.Flatten)
+    cnn.add(keras.layers.Dense(p, activation='relu', input_shape=(latent_size,)))
+    # cnn.add(keras.layers.Dense(p, activation='relu'))
     # flatten to a 1xp
     cnn.add(Reshape((p, 1, 1)))
 
@@ -56,13 +44,12 @@ def build_generator(latent_size):
     latent = Input(shape=(latent_size,))
 
     # this will be our label
-    label = Input(shape=(1,), dtype='float64')
-    cls = Embedding(num_classes, latent_size,
-                    embeddings_initializer='glorot_normal')(label)
+    label = Input(shape=(2,), dtype='float32')
+    # cls = Embedding(2, latent_size,
+    #                 embeddings_initializer='glorot_normal')(label)
 
     # hadamard product between z-space and a class conditional embedding
-    h = layers.multiply([latent, cls])
-
+    h = layers.multiply([latent, label])
     fake_image = cnn(h)
 
     return Model([latent, label], fake_image)
@@ -74,7 +61,7 @@ def build_discriminator():
     cnn = Sequential()
 
     cnn.add(Conv2D(32, 3, padding='same', strides=2,
-                   input_shape=(num_classes, 1, 1)))
+                   input_shape=(2, 1, 1)))
     cnn.add(LeakyReLU(0.2))
     cnn.add(Dropout(0.3))
 
@@ -101,7 +88,7 @@ def build_discriminator():
     # (name=auxiliary) is the class that the discriminator thinks the image
     # belongs to.
     fake = Dense(1, activation='sigmoid', name='generation')(features)
-    aux = Dense(num_classes, activation='softmax', name='auxiliary')(features)
+    aux = Dense(2, activation='linear', name='auxiliary')(features)
 
     return Model(image, [fake, aux])
 
@@ -114,7 +101,7 @@ if __name__ == '__main__':
     # batch and latent size taken from the paper
     epochs = 1
     batch_size = 100
-    latent_size = 100
+    latent_size = 2
 
     # Adam parameters suggested in https://arxiv.org/abs/1511.06434
     adam_lr = 0.0002
@@ -133,7 +120,7 @@ if __name__ == '__main__':
     generator = build_generator(latent_size)
 
     latent = Input(shape=(latent_size, ))
-    image_class = Input(shape=(1,), dtype='int32')
+    image_class = Input(shape=(2,), dtype='float32')
 
     # get a fake image
     fake = generator([latent, image_class])
@@ -150,14 +137,41 @@ if __name__ == '__main__':
     )
     combined.summary()
 
-    # get our mnist data, and force it to be of shape (..., 28, 28, 1) with
-    # range [-1, 1]
-    (x_train, y_train), (x_test, y_test) = mnist.load_data()  # (60000, 28, 28) train, (10000, 28, 28) test
-    x_train = (x_train.astype(np.float32) - 127.5) / 127.5
-    x_train = np.expand_dims(np.expand_dims(x_train.reshape((60000, 784)), axis=-1), axis=-1)
-    x_test = (x_test.astype(np.float32) - 127.5) / 127.5
-    x_test = np.expand_dims(np.expand_dims(x_test.reshape((10000, 784)), axis=-1), axis=-1)
+    mypath = './5_17__20_grid/'
+    onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
 
+    X_tr = []
+    Y_tr = []
+    for file in onlyfiles:
+        mat = sio.loadmat(mypath + file)
+        # print('filename: ',mypath+file)
+        # print('keys: ',mat.keys())
+        rss_data = mat['file'][0, 0][0]
+        col_mean = np.nanmean(rss_data, axis=0)
+        # Find indices that you need to replace
+        inds = np.where(np.isnan(rss_data))
+        # Place column means in the indices. Align the arrays using take
+        rss_data[inds] = np.take(col_mean, inds[1])
+
+        # idx = ~np.isnan(rss_data).any(axis=1)
+        Y_tr.extend(np.tile(mat['file'][0, 0][-1][0], reps=(len(rss_data), 1)))  # tile stationary location labels
+        X_tr.extend(rss_data)  # RSS values
+
+    # pre-process data
+    x_train = np.array(X_tr)  # make into numpy arrays from native lists
+    y_train = np.array(Y_tr)
+    np.random.seed(seed=711)  # shuffle to de-group labels
+    np.random.shuffle(x_train)
+    np.random.seed(seed=711)
+    np.random.shuffle(y_train)
+
+    x_train = np.expand_dims(np.expand_dims(x_train, axis=-1), axis=-1)
+
+    x_test = x_train[-500:]
+    y_test = y_train[-500:]
+
+    x_train = x_train[:-500]
+    y_train = y_train[:-500]
 
     num_train, num_test = x_train.shape[0], x_test.shape[0]
 
@@ -181,15 +195,16 @@ if __name__ == '__main__':
             # generate a new batch of noise
             noise = np.random.uniform(-1, 1, (len(image_batch), latent_size))
 
-            # sample some labels from p_c
+            # sample some labels from p_c [2,2] to [12,12]
             sampled_labels = np.random.randint(0, num_classes, len(image_batch))
+            sampled_labels = np.random.uniform(low=2., high=12., size=(len(image_batch),2))
 
             # generate a batch of fake images, using the generated labels as a
             # conditioner. We reshape the sampled labels to be
             # (len(image_batch), 1) so that we can feed them into the embedding
             # layer as a length one sequence
             generated_images = generator.predict(
-                [noise, sampled_labels.reshape((-1, 1))], verbose=0)
+                [noise, sampled_labels.reshape((-1, 2))], verbose=0)
 
             x = np.concatenate((image_batch, generated_images))
 
@@ -197,8 +212,8 @@ if __name__ == '__main__':
             # Salimans et al., 2016
             # https://arxiv.org/pdf/1606.03498.pdf (Section 3.4)
             soft_zero, soft_one = 0, 0.95
-            y = np.array(
-                [soft_one] * len(image_batch) + [soft_zero] * len(image_batch))
+            y = np.array([soft_one] * len(image_batch) + [soft_zero] * len(image_batch))
+            # y = np.concatenate((np.expand_dims(y, axis=1), np.expand_dims(y, axis=1)), axis=1)
             aux_y = np.concatenate((label_batch, sampled_labels), axis=0)
 
             # we don't want the discriminator to also maximize the classification
@@ -219,7 +234,7 @@ if __name__ == '__main__':
             # the generator optimize over an identical number of images as the
             # discriminator
             noise = np.random.uniform(-1, 1, (2 * len(image_batch), latent_size))
-            sampled_labels = np.random.randint(0, num_classes, 2 * len(image_batch))
+            sampled_labels = np.random.uniform(low=2., high=12., size=(2*len(image_batch),2))
 
             # we want to train the generator to trick the discriminator
             # For the generator, we want all the {fake, not-fake} labels to say
@@ -227,7 +242,7 @@ if __name__ == '__main__':
             trick = np.ones(2 * len(image_batch)) * soft_one
 
             epoch_gen_loss.append(combined.train_on_batch(
-                [noise, sampled_labels.reshape((-1, 1))],
+                [noise, sampled_labels.reshape((-1, 2))],
                 [trick, sampled_labels]))
 
             progress_bar.update(index + 1)
@@ -240,9 +255,9 @@ if __name__ == '__main__':
         noise = np.random.uniform(-1, 1, (num_test, latent_size))
 
         # sample some labels from p_c and generate images from them
-        sampled_labels = np.random.randint(0, num_classes, num_test)
+        sampled_labels = np.random.uniform(low=2., high=12., size=(num_test,2))
         generated_images = generator.predict(
-            [noise, sampled_labels.reshape((-1, 1))], verbose=False)
+            [noise, sampled_labels.reshape((-1, 2))], verbose=False)
 
         x = np.concatenate((x_test, generated_images))
         y = np.array([1] * num_test + [0] * num_test)
@@ -256,12 +271,12 @@ if __name__ == '__main__':
 
         # make new noise
         noise = np.random.uniform(-1, 1, (2 * num_test, latent_size))
-        sampled_labels = np.random.randint(0, num_classes, 2 * num_test)
+        sampled_labels =  np.random.uniform(low=2., high=12., size=(2*num_test,2))
 
         trick = np.ones(2 * num_test)
 
         generator_test_loss = combined.evaluate(
-            [noise, sampled_labels.reshape((-1, 1))],
+            [noise, sampled_labels.reshape((-1, 2))],
             [trick, sampled_labels], verbose=False)
 
         generator_train_loss = np.mean(np.array(epoch_gen_loss), axis=0)
@@ -300,7 +315,7 @@ if __name__ == '__main__':
 
         sampled_labels = np.array([
             [i] * num_rows for i in range(num_classes)
-        ]).reshape(-1, 1)
+        ]).reshape(-1, 2)
 
         # get a batch to display
         generated_images = generator.predict(
