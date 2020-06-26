@@ -407,8 +407,8 @@ if __name__== "__main__":
     if mode == 'test':
         # define Markov process parameters
         t_steps = 1000  # number of time steps.
-        step_size = 0.002
-        end = 1.
+        step_size = 0.0135
+        end = step_size * 8
         time = np.linspace(start=step_size, stop=end, num=int(end/step_size))  # 26.822 m/s is 60 MPH
     else:
         time = np.arange(len(cars))
@@ -484,10 +484,10 @@ if __name__== "__main__":
                         true_loc[1, k] = cars[n].transmitters[m][1]
 
             # plot road, cars, recievers
-            if i % 100 == 1:
-                plot_road(num_lanes, lane_width, cars, car_wid_rad, car_len_rad, xMin, xMax, yMin, yMax, receivers, time[i])
+            # if i % 100 == 1:
+            plot_road(num_lanes, lane_width, cars, car_wid_rad, car_len_rad, xMin, xMax, yMin, yMax, receivers, time[i])
             # move simulation one time step forward
-            cars = MP(cars, time[-1] / t_steps, tire_corner_dist, tire_thickness, rim_diameter, time[i])
+            cars = MP(cars, step_size, tire_corner_dist, tire_thickness, rim_diameter, time[i])
 
     np.save('X_sim_grid', RSS)
     np.save('Y_sim_grid',true_loc)
