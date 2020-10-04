@@ -101,8 +101,8 @@ def compute_rss(distance, LOS):
     #  9.391907167846293 for los
     # 4.435287398731233 for grid
     txPwrVar = 4.435287398731233 #dB
-    LOS_grad = -1.12
-    NLOS_grad = -2.38
+    LOS_grad = -2.053987479176067
+    NLOS_grad = -3.850275788138077
     #Account for variation in Tx Power
     norm = np.random.normal(0, 1)
     P0var = P0 + norm * txPwrVar #Tx Power varies by about 4 dB
@@ -111,6 +111,7 @@ def compute_rss(distance, LOS):
         RSS = P0var + 10*LOS_grad*math.log(distance,10)
     else:
         RSS = P0var + 10*NLOS_grad*math.log(distance,10)
+    # RSS = P0var + 10 * NLOS_grad * math.log(distance, 10)
     return RSS
 
 
@@ -375,7 +376,7 @@ def grid_cars(car_len_rad, car_wid_rad, xMin, xMax, yMin, yMax, freq, tire_corne
     return car_list
 
 if __name__== "__main__":
-    mode = 'test'  # train for grid, test for path
+    mode = 'train'  # train for grid, test for path
 
     car_len_rad = 4.56 / 2.  # 2013 subaru forester length in meters
     car_wid_rad = 2.006 / 2.  # width in meters
@@ -489,8 +490,8 @@ if __name__== "__main__":
             # move simulation one time step forward
             cars = MP(cars, step_size, tire_corner_dist, tire_thickness, rim_diameter, time[i])
 
-    np.save('X_sim_grid', RSS)
-    np.save('Y_sim_grid',true_loc)
+    np.save('X_sim_test', RSS)
+    np.save('Y_sim_test',true_loc)
 
 
 

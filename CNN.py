@@ -61,105 +61,6 @@ def define_model(nn, l, bn, do):
     model = Model(inputs=inputs, outputs=outputs)
 
 
-
-    # model = keras.Sequential()
-    # filt_size = 3
-    # p_size = 2
-    # do = 0.0
-    # p = 3
-    #
-    # # conv layers 1xp
-    # model.add(keras.layers.Conv2D(filters=512, kernel_size=(filt_size, 1), padding='same', activation='relu',
-    #                               input_shape=(p, 1, 1)))
-    # if bn:
-    #     model.add(BatchNormalization(axis=3))
-    #     # model.add(MaxPool2D(pool_size=(p_size, 1), padding="same"))
-    #     model.add(Dropout(do))
-    # model.add(keras.layers.Conv2D(filters=256, kernel_size=(filt_size, 1), padding='same', activation='relu'))
-    # if bn:
-    #     model.add(BatchNormalization(axis=3))
-    #     # model.add(MaxPool2D(pool_size=(p_size, 1), padding="same"))
-    #     model.add(Dropout(do))
-    #
-    # model.add(keras.layers.Conv2D(filters=128, kernel_size=(filt_size, 1), padding='same', activation='relu'))
-    # if bn:
-    #     model.add(BatchNormalization(axis=3))
-    #     # model.add(MaxPool2D(pool_size=(p_size, 1), padding="same"))
-    #     model.add(Dropout(do))
-    #
-    # model.add(keras.layers.Conv2D(filters=64, kernel_size=(filt_size, 1), padding='same', activation='relu'))
-    # if bn:
-    #     model.add(BatchNormalization(axis=3))
-    #     # model.add(MaxPool2D(pool_size=(p_size, 1), padding="same"))
-    #     model.add(Dropout(do))
-    #
-    # model.add(keras.layers.Conv2D(filters=32, kernel_size=(filt_size, 1), padding='same', activation='relu'))
-    # if bn:
-    #     model.add(BatchNormalization(axis=3))
-    #     # model.add(MaxPool2D(pool_size=(p_size, 1), padding="same"))
-    #     model.add(Dropout(do))
-    #
-    # model.add(keras.layers.Conv2D(filters=16, kernel_size=(filt_size, 1), padding='same', activation='relu'))
-    # if bn:
-    #     model.add(BatchNormalization(axis=3))
-    #     # model.add(MaxPool2D(pool_size=(p_size, 1), padding="same"))
-    #     model.add(Dropout(do))
-    #
-    # model.add(keras.layers.Conv2D(filters=8, kernel_size=(filt_size, 1), padding='same', activation='relu'))
-    # if bn:
-    #     model.add(BatchNormalization(axis=3))
-    #     # model.add(MaxPool2D(pool_size=(p_size, 1), padding="same"))
-    #     model.add(Dropout(do))
-    #
-    # model.add(keras.layers.Conv2D(filters=4, kernel_size=(filt_size, 1), padding='same', activation='relu'))
-    # if bn:
-    #     model.add(BatchNormalization(axis=3))
-    #     # model.add(MaxPool2D(pool_size=(p_size, 1), padding="same"))
-    #     model.add(Dropout(do))
-    #
-    # model.add(keras.layers.Conv2D(filters=2, kernel_size=(filt_size, 1), padding='same', activation='relu'))
-    # if bn:
-    #     model.add(BatchNormalization(axis=3))
-    #     # model.add(MaxPool2D(pool_size=(p_size, 1), padding="same"))
-    #     model.add(Dropout(do))
-    #
-    # model.add(keras.layers.Flatten())
-    # model.add(keras.layers.Dense(512, activation='relu'))
-    # model.add(keras.layers.Dense(2, activation='linear'))
-
-
-
-
-
-    # # conv layers 8xp
-    # model.add(keras.layers.Conv2D(filters=64, kernel_size=(2, 2), padding='same', activation='relu',
-    #                               input_shape=(8, p, 1)))
-    # # model.add(keras.layers.Dropout(do))
-    # # model.add(keras.layers.MaxPooling2D(pool_size=(2, 1)))
-    # if bn:
-    #     model.add(BatchNormalization())
-    # model.add(keras.layers.Conv2D(filters=32, kernel_size=(2, 2), padding='same', activation='relu'))
-    # # model.add(keras.layers.Dropout(do))
-    # if bn:
-    #     model.add(BatchNormalization())
-    # model.add(keras.layers.Conv2D(filters=16, kernel_size=(2, 2), padding='same', activation='relu'))
-    # # model.add(keras.layers.Dropout(do))
-    # if bn:
-    #     model.add(BatchNormalization())
-    # model.add(keras.layers.Conv2D(filters=8, kernel_size=(2, 2), padding='same', activation='relu'))
-    # # model.add(keras.layers.Dropout(do))
-    # if bn:
-    #     model.add(BatchNormalization())
-    # model.add(keras.layers.Conv2D(filters=4, kernel_size=(2, 2), padding='same', activation='relu'))
-    # model.add(keras.layers.Dropout(do))
-    # if bn:
-    #     model.add(BatchNormalization())
-    #
-    #
-    # model.add(keras.layers.Flatten())
-    # model.add(keras.layers.Dense(2, activation='linear'))
-
-
     model.compile(loss='mse', optimizer='adam', metrics=['mse'])
     model.summary()
     return model
@@ -220,6 +121,95 @@ def findBestHyperparameters(X_tr, ytr, X_te, yte):
 
     return model_star
 
+# Example data sample:
+# {'time': '@107.629234s', 'model': 'Schrader-SE3', 'type': 'TPMS', 'flags': '00', 'id': '89ADE2', 'pressure_kPa': 33.3,
+#  'mic': 'N/A', 'mod': 'ASK', 'freq': 0.0, 'rssi': -81.24260000000001, 'snr': 17.993, 'noise': -99.2356, 'RECVR': 3,
+#  'pos': 8, 'wheel': 'FL', 'x_tire_m': 10.861, 'y_tire_m': 6.792, 'x_recvr_m': 15, 'y_recvr_m': 12.99038105676658,
+#  'distance_m': 7.453271008415217}
+
+# # fields that possibly correlate to location: time, id, pressure, rssi, snr, noise, RECVR, x_recvr_m, y_recvr_m
+# import json
+# X_tr = []
+# Y_tr = []
+# with open('combined.json') as json_file:
+#     data = json.load(json_file)
+#
+#     x_locs = []
+#     for i in range(len(data)):
+#         x_locs.append(data[i]['x_tire_m'])
+#     x_locs = np.unique(np.array(x_locs))
+#
+#     for p in range(len(x_locs)):
+#         rssi_1 = []
+#         rssi_2 = []
+#         rssi_3 = []
+#         y_temp = []
+#
+#         for i in range(len(data)):
+#             if data[i]['x_tire_m'] == x_locs[p]:  # get all data for this location
+#                 y_temp.append([data[i]['x_tire_m'], data[i]['y_tire_m']])
+#
+#                 if data[i]['RECVR'] == 1:
+#                     rssi_1.append(data[i]['rssi'])
+#                 elif data[i]['RECVR'] == 2:
+#                     rssi_2.append(data[i]['rssi'])
+#                 else:
+#                     rssi_3.append(data[i]['rssi'])
+#
+#         print('Position: %i' % p)
+#         print('# rssi_1: %i ' % len(rssi_1))
+#         print('# rssi_2: %i ' % len(rssi_2))
+#         print('# rssi_3: %i ' % len(rssi_3))
+#
+#         shrt_len = np.min([len(rssi_1), len(rssi_2), len(rssi_3)])
+#         X_tr.extend(np.concatenate((np.expand_dims(np.array(rssi_1[:shrt_len]), axis=1), np.expand_dims(np.array(rssi_2[:shrt_len]), axis=1),
+#                                     np.expand_dims(np.array(rssi_3[:shrt_len]), axis=1)), axis=1))
+#         Y_tr.extend(np.array(y_temp[:shrt_len]))
+#
+# print(np.array(X_tr).shape)
+# print(np.array(Y_tr).shape)
+
+
+# X = []
+# Y = []
+# with open('los.json') as json_file:
+#     data = json.load(json_file)
+#
+#     x_locs = []
+#     for i in range(len(data)):
+#         x_locs.append(data[i]['x_tire_m'])
+#     x_locs = np.unique(np.array(x_locs))
+#
+#     for p in range(len(x_locs)):
+#         rssi_1 = []
+#         rssi_2 = []
+#         rssi_3 = []
+#         y_temp = []
+#
+#         for i in range(len(data)):
+#             if data[i]['x_tire_m'] == x_locs[p]:  # get all data for this location
+#                 y_temp.append([data[i]['x_tire_m'], data[i]['y_tire_m']])
+#
+#                 if data[i]['RECVR'] == 1:
+#                     rssi_1.append(data[i]['rssi'])
+#                 elif data[i]['RECVR'] == 2:
+#                     rssi_2.append(data[i]['rssi'])
+#                 else:
+#                     rssi_3.append(data[i]['rssi'])
+#
+#         print('Position: %i' % p)
+#         print('# rssi_1: %i ' % len(rssi_1))
+#         print('# rssi_2: %i ' % len(rssi_2))
+#         print('# rssi_3: %i ' % len(rssi_3))
+#
+#         shrt_len = np.min([len(rssi_1), len(rssi_2), len(rssi_3)])
+#         X.extend(np.concatenate((np.expand_dims(np.array(rssi_1[:shrt_len]), axis=1), np.expand_dims(np.array(rssi_2[:shrt_len]), axis=1),
+#                                     np.expand_dims(np.array(rssi_3[:shrt_len]), axis=1)), axis=1))
+#         Y.extend(np.array(y_temp[:shrt_len]))
+#
+# print(np.array(X).shape)
+# print(np.array(Y).shape)
+
 
 
 
@@ -241,25 +231,6 @@ for file in onlyfiles:
     rss_data = mat['file'][0][0][0][0][0][0]
     idx = ~np.isnan(rss_data).any(axis=1)
     no_nan_rss_data = rss_data[idx]
-    # col_mean = np.nanmean(rss_data, axis=0)*np.sqrt(2 / np.pi)
-    # col_std = np.nanstd(rss_data, axis=0)
-    # # Find indices that you need to replace
-    # inds = np.where(np.isnan(rss_data))
-    #
-    # # replace NANs with random rayleigh values
-    # for idx in range(len(inds[0])):
-    #     if inds[1][idx] == 0:
-    #         rss_data[inds[0][idx], inds[1][idx]] = np.random.rayleigh(col_mean[0], size=1)
-    #     if inds[1][idx] == 1:
-    #         rss_data[inds[0][idx], inds[1][idx]] = np.random.rayleigh(col_mean[1], size=1)
-    #     else:
-    #         rss_data[inds[0][idx], inds[1][idx]] = np.random.rayleigh(col_mean[2], size=1)
-    #
-    # # add even more simulated data points using column mean and variance such that each location has n samples
-    # n = 1000 - len(rss_data)
-    # # n=0
-    # aug_data = np.random.rayleigh(col_mean, size=(n, 3))
-    # rss_data = np.concatenate((rss_data, aug_data), axis=0)
 
     # compute packet RSS values
     num_packets = int(np.floor(len(no_nan_rss_data)/8.))
@@ -276,9 +247,8 @@ for file in onlyfiles:
 
 # pre-process data
 X_tr = np.array(10*np.log10(X_tr))  # make into numpy arrays from native lists
+# X_tr = np.array(X_tr)
 Y_tr = np.array(Y_tr)
-
-
 
 
 
@@ -291,20 +261,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import manifold
 
-tsne = manifold.TSNE(n_components=2, init='pca', random_state=0)
-X_tsne = tsne.fit_transform(X_tr.tolist())
-plt.scatter(X_tsne[:,0],X_tsne[:,1],c=cmap_lables,cmap='viridis')
-plt.title('t-SNE Dimension Reduction of Training Data')
-plt.show()
-
-
-
-
-
-
-
-
-
+# tsne = manifold.TSNE(n_components=2, init='pca', random_state=0)
+# X_tsne = tsne.fit_transform(X_tr.tolist())
+# plt.scatter(X_tsne[:,0],X_tsne[:,1],c=cmap_lables,cmap='viridis')
+# plt.title('t-SNE Dimension Reduction of Training Data')
+# plt.show()
 
 
 
@@ -330,9 +291,38 @@ plt.show()
 # Y_sim = np.reshape(Y, newshape=(Y.shape[1], Y.shape[0], Y.shape[2]))
 # Y_sim = Y_sim[:,0,:]
 # X_sim = np.mean(X_sim, axis=1)
-#
+
+
 # X_tr = np.concatenate((X_tr, X_sim),axis=0)
 # Y_tr = np.concatenate((Y_tr, Y_sim),axis=0)
+
+# X_tr = X_sim
+# Y_tr = Y_sim
+
+# # simulated
+# X_sim = np.load('X_sim_test.npy').T
+# Y_sim = np.load('Y_sim_test.npy').T
+#
+# # group packets
+# X = []
+# Y = []
+# reps = 8
+# for i in range(reps):
+#     X.append(X_sim[i::reps])
+#     Y.append(Y_sim[i::reps])
+#
+# X = np.array(X)
+# Y = np.array(Y)
+# X_sim = np.reshape(X, newshape=(X.shape[1], X.shape[0], X.shape[2]))
+# Y_sim = np.reshape(Y, newshape=(Y.shape[1], Y.shape[0], Y.shape[2]))
+# Y_sim = Y_sim[:,0,:]
+# X_sim = np.mean(X_sim, axis=1)
+#
+# X = X_sim
+# Y = Y_sim
+
+
+
 
 
 
@@ -374,6 +364,42 @@ for file in onlyfiles:
     Y.extend(np.tile(mat['file'][0][0][0][0][0][-1][0], reps=(len(packet_rss), 1)))  # tile stationary location labels
 
 
+# # import val/test data
+# mypath = './NLOS_test_5_23_20/'
+# onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
+# X_nlos = []
+# Y_nlos = []
+#
+# from scipy import stats
+# cmap_lables=[]
+# vlines_test = [0]
+# cmap_counter = 0
+# p_rss_by_loc = []
+# loc_key = []
+# for file in onlyfiles:
+#     mat = sio.loadmat(mypath + file)
+#     rss_data = mat['file'][0][0][0][0][0][0]
+#     # remove rows with NANs
+#     idx = ~np.isnan(rss_data).any(axis=1)
+#     rss_data = rss_data[idx]
+#
+#     # compute packet RSS values
+#     num_packets = int(np.floor(len(rss_data)/8.))
+#     packet_rss = []
+#     for i in range(num_packets):
+#         packet_rss.append(np.mean(rss_data[i*8:(i+1)*8], axis=0))
+#         cmap_lables.extend([cmap_counter])
+#         cmap_compare.extend([1])
+#
+#     p_rss_by_loc.append(10*np.log10(packet_rss))
+#     loc_key.append(mat['file'][0][0][0][0][0][-1][0])
+#
+#     cmap_counter += 1
+#     X.extend(packet_rss)  # RSS values
+#     vlines_test.append(len(packet_rss))
+#     Y.extend(np.tile(mat['file'][0][0][0][0][0][-1][0], reps=(len(packet_rss), 1)))  # tile stationary location labels
+
+
 
 # file = onlyfiles[test_idx]
 # mat = sio.loadmat(mypath + file)
@@ -389,9 +415,13 @@ for file in onlyfiles:
 #
 # X = packet_rss  # RSS values
 # Y = np.tile(mat['file'][0][0][0][0][0][-1][0], reps=(len(packet_rss), 1))  # tile stationary location labels
-#
+
+
+
+
 # pre-process data
 X = np.array(10*np.log10(X))
+# X = np.array(X)
 Y = np.array(Y)
 
 
@@ -401,7 +431,6 @@ Y = np.array(Y)
 # Estimated LOS alpha:  -2.053987479176067
 LOS_grad = -2.053987479176067
 NLOS_grad = -3.850275788138077
-avg_alpha = np.mean([LOS_grad, NLOS_grad])
 avg_alpha = NLOS_grad
 receivers = np.array([[7.5,0],[0,12.99],[15,12.99]])  # receiver locations, a_i in literature
 
@@ -412,6 +441,7 @@ true_dists = []
 est_dists = []
 for j in range (len(X)):
     P0 = -55.8297023474628  # 1m reference power
+    # P0 = -59.78
     distance = np.power(10, (X[j] - P0)/(10. * avg_alpha))  # estimated distance to each receiver
     # print(distance)
     num_x, den_x, num_y, den_y = [], [], [], []
@@ -429,174 +459,135 @@ for j in range (len(X)):
     x_est = sum(num_x) / sum(den_x)
     y_est = sum(num_y) / sum(den_y)
     wcl_locs.append([x_est, y_est])
-
+#
 print('WCL Distance MSE: %f' % np.mean(dist_err))
 wcl_locs = np.array(wcl_locs)
-mse = np.mean((wcl_locs - Y)**2)
-plt.scatter(wcl_locs[:,0], wcl_locs[:,1])
-plt.scatter(Y[:,0],Y[:,1])
-plt.scatter(receivers[:,0], receivers[:,1])
-plt.legend(['WCL estimates','Truth','Receivers'])
-plt.title('Distance MSE: %f, WCL Localization MSE: %f' % (np.mean(dist_err), mse))
-plt.grid(True)
-plt.xlabel('X-coordainte (meters)')
-plt.ylabel('Y-coordainte (meters)')
-plt.show()
-
-# np.save('CNN_preds_normal',wcl_locs)
-# np.save('CNN_true_normal',Y)
+# mse = np.mean((wcl_locs - Y_sim)**2)
+# plt.scatter(wcl_locs[:,0], wcl_locs[:,1])
+# plt.scatter(Y[:,0],Y[:,1])
+# plt.scatter(receivers[:,0], receivers[:,1])
+# plt.legend(['WCL estimates','Truth','Receivers'])
+# plt.title('Distance MSE: %f, WCL Localization MSE: %f' % (np.mean(dist_err), mse))
+# plt.grid(True)
+# plt.xlabel('X-coordainte (meters)')
+# plt.ylabel('Y-coordainte (meters)')
+# plt.show()
 
 
-# for i in range(len(x_location)):
-#     vehicle_rss = []
-#     dist_est = []
-#     for j in RSS.keys():
-#         vehicle_rss.append(RSS[j][i])
-#     top_3_index = sorted(range(len(vehicle_rss)), reverse=True, key=lambda k: vehicle_rss[k])[:3]
+print('saving')
+np.save('bound_true_locs', Y)
+# np.save('bound_est_dists', est_dists)
+
+np.save('PLM_dists', est_dists)
 #
-#     for top_3 in top_3_index:
-#         dist_est.append(distance(vehicle_rss[top_3]))
+# # KW test for non-parametric means
+# for rec in range(3):
+#     for i in range(len(p_rss_by_loc)):
+#         for j in range(i, len(p_rss_by_loc)):
+#             if i != j:
+#                 arri = np.array(p_rss_by_loc[i])
+#                 arrj = np.array(p_rss_by_loc[j])
+#                 stat, p_stat = stats.kruskal(arri[:,rec], arrj[:,rec])
 #
-#     sensor_names = []
-#     for new in top_3_index:
-#         sensor_names.append(RSS.keys()[new])
+#                 if p_stat > 0.05:
+#                     print('p: ',p_stat)
+#                     print('receiver: ',rec,' statistically similar for locations: ')
+#                     print(loc_key[i])
+#                     print(loc_key[j])
+
+
+
+# tsne = manifold.TSNE(n_components=2, init='pca', random_state=0)
+# X_tsne = tsne.fit_transform(X.tolist())
+# plt.scatter(X_tsne[:,0],X_tsne[:,1],c=cmap_lables,cmap='plasma')
+# plt.title('t-SNE Dimension Reduction of Val/Test Data')
+# plt.show()
 #
-#     three_sensor_location = []
-#     for l in sensor_names:
-#         three_sensor_location.append(sensor_location[l])
 #
-#     num_x, den_x, num_y, den_y = [],[],[],[]
-#     for loc in range(len(dist_est)):
-#         d_est = dist_est[loc]
-#         num_x.append((d_est**(-g)*three_sensor_location[loc][0]))
-#         den_x.append(d_est**(-g))
-#         num_y.append((d_est ** (-g)*three_sensor_location[loc][1]))
-#         den_y.append(d_est ** (-g))
-#     x_est = sum(num_x) / sum(den_x)
-#     y_est = sum(num_y) / sum(den_y)
-#     estimated_x_error.append(abs(x_location[i]-x_est))
-#     estimated_y_error.append(abs(abs(y_location[i])-abs(y_est)))
-#     d_true = (x_location[i], y_location[i])
-#     d_est = (x_est, y_est)
+# tsne = manifold.TSNE(n_components=2, init='pca', random_state=0)
+# X_tsne = tsne.fit_transform(np.concatenate((X_tr,X),axis=0))
+# plt.scatter(X_tsne[:,0],X_tsne[:,1],c=cmap_compare,cmap='bwr')
+# plt.title('t-SNE Dimension Reduction of Training and Val/Test Data')
+# plt.show()
 #
-#     dme_all.append(euclidean(d_true,d_est))
+# plt.plot(np.concatenate((X_tr[:,0], X[:,0]),axis=0))
+# count = 0
+# for vline in vlines:
+#     plt.axvline(x=vline+count,linewidth=2, color='r')
+#     count += vline
+# for vline in vlines_test:
+#     plt.axvline(x=vline+count,linewidth=2, color='g')
+#     count += vline
+# plt.ylabel('Power (dBm)')
+# plt.xlabel('Sample #')
+# plt.title('Receiver 1 RSS By Location')
+# plt.show()
 #
-# a = sum(dme_all)/len(dme_all)
-# print(a)
-# DME.append(a)
-# #print('Mean Distance Measurement Error:%f ' %a)
-
-
-
-
-# KW test for non-parametric means
-for rec in range(3):
-    for i in range(len(p_rss_by_loc)):
-        for j in range(i, len(p_rss_by_loc)):
-            if i != j:
-                arri = np.array(p_rss_by_loc[i])
-                arrj = np.array(p_rss_by_loc[j])
-                stat, p_stat = stats.kruskal(arri[:,rec], arrj[:,rec])
-
-                if p_stat > 0.05:
-                    print('p: ',p_stat)
-                    print('receiver: ',rec,' statistically similar for locations: ')
-                    print(loc_key[i])
-                    print(loc_key[j])
-
-
-
-tsne = manifold.TSNE(n_components=2, init='pca', random_state=0)
-X_tsne = tsne.fit_transform(X.tolist())
-plt.scatter(X_tsne[:,0],X_tsne[:,1],c=cmap_lables,cmap='plasma')
-plt.title('t-SNE Dimension Reduction of Val/Test Data')
-plt.show()
-
-
-tsne = manifold.TSNE(n_components=2, init='pca', random_state=0)
-X_tsne = tsne.fit_transform(np.concatenate((X_tr,X),axis=0))
-plt.scatter(X_tsne[:,0],X_tsne[:,1],c=cmap_compare,cmap='bwr')
-plt.title('t-SNE Dimension Reduction of Training and Val/Test Data')
-plt.show()
-
-plt.plot(np.concatenate((X_tr[:,0], X[:,0]),axis=0))
-count = 0
-for vline in vlines:
-    plt.axvline(x=vline+count,linewidth=2, color='r')
-    count += vline
-for vline in vlines_test:
-    plt.axvline(x=vline+count,linewidth=2, color='g')
-    count += vline
-plt.ylabel('Power (dBm)')
-plt.xlabel('Sample #')
-plt.title('Receiver 1 RSS By Location')
-plt.show()
-
-
-plt.plot(np.concatenate((X_tr[:,1], X[:,1]),axis=0))
-count = 0
-for vline in vlines:
-    plt.axvline(x=vline+count,linewidth=2, color='r')
-    count += vline
-for vline in vlines_test:
-    plt.axvline(x=vline+count,linewidth=2, color='g')
-    count += vline
-plt.ylabel('Power (dBm)')
-plt.xlabel('Sample #')
-plt.title('Receiver 2 RSS By Location')
-plt.show()
-
-plt.plot(np.concatenate((X_tr[:,2], X[:,2]),axis=0))
-count = 0
-for vline in vlines:
-    plt.axvline(x=vline+count,linewidth=2, color='r')
-    count += vline
-for vline in vlines_test:
-    plt.axvline(x=vline+count,linewidth=2, color='g')
-    count += vline
-plt.ylabel('Power (dBm)')
-plt.xlabel('Sample #')
-plt.title('Receiver 3 RSS By Location')
-plt.show()
-
-
-def return_intersection(hist_1, hist_2):
-    minima = np.minimum(hist_1, hist_2)
-    intersection = np.true_divide(np.sum(minima), np.sum(hist_2))
-    return intersection
-
-
-bins = 100
-raange = [-120, -70]
-hist1, _ = np.histogram(X_tr[:,0].flatten(), bins=bins, range=raange)
-hist2, _ = np.histogram(X[:,0].flatten(), bins=bins, range=raange)
-intersection = return_intersection(hist1, hist2)
-plt.hist([np.expand_dims(X_tr[:,0].flatten(),axis=1).tolist(), np.expand_dims(X[:,0].flatten(),axis=1).tolist()], bins=bins, density=True, alpha=0.5)
-plt.xlabel('Power (dBm)')
-plt.ylabel('density')
-plt.legend(['Training Data','Testing Data'])
-plt.title('Receiver 1 RSS Histogram Intersect: % f' % intersection)
-plt.show()
-
-hist1, _ = np.histogram(X_tr[:,1].flatten(), bins=bins, range=raange)
-hist2, _ = np.histogram(X[:,1].flatten(), bins=bins, range=raange)
-intersection = return_intersection(hist1, hist2)
-plt.hist([np.expand_dims(X_tr[:,1].flatten(),axis=1).tolist(), np.expand_dims(X[:,1].flatten(),axis=1).tolist()], bins=bins, density=True, alpha=0.5)
-plt.xlabel('Power (dBm)')
-plt.ylabel('density')
-plt.legend(['Training Data','Testing Data'])
-plt.title('Receiver 2 RSS Histogram Intersect: % f' % intersection)
-plt.show()
-
-hist1, _ = np.histogram(X_tr[:,2].flatten(), bins=bins, range=raange)
-hist2, _ = np.histogram(X[:,2].flatten(), bins=bins, range=raange)
-intersection = return_intersection(hist1, hist2)
-plt.hist([np.expand_dims(X_tr[:,2].flatten(),axis=1).tolist(), np.expand_dims(X[:,2].flatten(),axis=1).tolist()], bins=bins, density=True, alpha=0.5)
-plt.xlabel('Power (dBm)')
-plt.ylabel('density')
-plt.legend(['Training Data','Testing Data'])
-plt.title('Receiver 3 RSS Histogram Intersect: % f' % intersection)
-plt.show()
+#
+# plt.plot(np.concatenate((X_tr[:,1], X[:,1]),axis=0))
+# count = 0
+# for vline in vlines:
+#     plt.axvline(x=vline+count,linewidth=2, color='r')
+#     count += vline
+# for vline in vlines_test:
+#     plt.axvline(x=vline+count,linewidth=2, color='g')
+#     count += vline
+# plt.ylabel('Power (dBm)')
+# plt.xlabel('Sample #')
+# plt.title('Receiver 2 RSS By Location')
+# plt.show()
+#
+# plt.plot(np.concatenate((X_tr[:,2], X[:,2]),axis=0))
+# count = 0
+# for vline in vlines:
+#     plt.axvline(x=vline+count,linewidth=2, color='r')
+#     count += vline
+# for vline in vlines_test:
+#     plt.axvline(x=vline+count,linewidth=2, color='g')
+#     count += vline
+# plt.ylabel('Power (dBm)')
+# plt.xlabel('Sample #')
+# plt.title('Receiver 3 RSS By Location')
+# plt.show()
+#
+#
+# def return_intersection(hist_1, hist_2):
+#     minima = np.minimum(hist_1, hist_2)
+#     intersection = np.true_divide(np.sum(minima), np.sum(hist_2))
+#     return intersection
+#
+#
+# bins = 100
+# raange = [-120, -70]
+# hist1, _ = np.histogram(X_tr[:,0].flatten(), bins=bins, range=raange)
+# hist2, _ = np.histogram(X[:,0].flatten(), bins=bins, range=raange)
+# intersection = return_intersection(hist1, hist2)
+# plt.hist([np.expand_dims(X_tr[:,0].flatten(),axis=1).tolist(), np.expand_dims(X[:,0].flatten(),axis=1).tolist()], bins=bins, density=True, alpha=0.5)
+# plt.xlabel('Power (dBm)')
+# plt.ylabel('density')
+# plt.legend(['Training Data','Testing Data'])
+# plt.title('Receiver 1 RSS Histogram Intersect: % f' % intersection)
+# plt.show()
+#
+# hist1, _ = np.histogram(X_tr[:,1].flatten(), bins=bins, range=raange)
+# hist2, _ = np.histogram(X[:,1].flatten(), bins=bins, range=raange)
+# intersection = return_intersection(hist1, hist2)
+# plt.hist([np.expand_dims(X_tr[:,1].flatten(),axis=1).tolist(), np.expand_dims(X[:,1].flatten(),axis=1).tolist()], bins=bins, density=True, alpha=0.5)
+# plt.xlabel('Power (dBm)')
+# plt.ylabel('density')
+# plt.legend(['Training Data','Testing Data'])
+# plt.title('Receiver 2 RSS Histogram Intersect: % f' % intersection)
+# plt.show()
+#
+# hist1, _ = np.histogram(X_tr[:,2].flatten(), bins=bins, range=raange)
+# hist2, _ = np.histogram(X[:,2].flatten(), bins=bins, range=raange)
+# intersection = return_intersection(hist1, hist2)
+# plt.hist([np.expand_dims(X_tr[:,2].flatten(),axis=1).tolist(), np.expand_dims(X[:,2].flatten(),axis=1).tolist()], bins=bins, density=True, alpha=0.5)
+# plt.xlabel('Power (dBm)')
+# plt.ylabel('density')
+# plt.legend(['Training Data','Testing Data'])
+# plt.title('Receiver 3 RSS Histogram Intersect: % f' % intersection)
+# plt.show()
 
 
 
@@ -644,9 +635,9 @@ plt.show()
 #     Y_.append(np.linalg.norm(Y[i] - receivers, axis=1))
 # Y_ = np.array(Y_)
 # Y = Y_
-#
-# print(Y_tr.shape)
-# print(Y.shape)
+
+print(Y_tr.shape)
+print(Y.shape)
 
 np.random.seed(seed=711)  # shuffle to de-group labels
 np.random.shuffle(X_tr)
@@ -663,6 +654,9 @@ np.random.shuffle(Y)
 X_tr = np.expand_dims(np.expand_dims(X_tr, axis=-1), axis=-1)
 X = np.expand_dims(np.expand_dims(X, axis=-1), axis=-1)
 
+
+
+
 # X_tr = np.expand_dims(X_tr, axis=-1)
 # X = np.expand_dims(X, axis=-1)
 
@@ -675,7 +669,6 @@ X = np.expand_dims(np.expand_dims(X, axis=-1), axis=-1)
 
 X_val = X
 Y_val = Y
-
 # Y = Y_tr
 # X_tr = X[:-200]
 # Y_tr = Y[:-200]
@@ -693,52 +686,13 @@ model = findBestHyperparameters(X_tr, Y_tr, X_val, Y_val)
 X_te = X
 Y_te = Y
 
-model = keras.models.load_model('model_best_weights.h5')
+# model = keras.models.load_model('model_best_weights.h5')
 
 
 # TEST
 score = model.evaluate(X_te, Y_te, verbose=0)  # Print test accuracy
 print('\n', 'Test MSE:', score[1])
 
-# # WCL with ranges estimated by CNN
-#
-# wcl_locs = []
-# dist_err = []
-# true_dists = []
-# est_dists = []
-# distances = model.predict(X_te)  # estimated distance to each receiver
-# g = 8.
-# for j in range(len(X_te)):
-#     distance = distances[j]
-#     # print(distance)
-#     num_x, den_x, num_y, den_y = [], [], [], []
-#     for i in range(len(X[0])):
-#         # computations towards distance MSE
-#         true_dist = np.sqrt((Y_locs[j,0] - receivers[i,0])**2 + (Y_locs[j,1] - receivers[i,1])**2)
-#         true_dists.append(true_dist)
-#         est_dists.append(distance[i])
-#         dist_err.append((distance - true_dist)**2)
-#         # computations towards location estimates
-#         num_x.append((distance[i] ** (-g) * receivers[i,0]))
-#         den_x.append(distance[i] ** (-g))
-#         num_y.append((distance[i] ** (-g) * receivers[i,1]))
-#         den_y.append(distance[i] ** (-g))
-#     x_est = sum(num_x) / sum(den_x)
-#     y_est = sum(num_y) / sum(den_y)
-#     wcl_locs.append([x_est, y_est])
-
-# print('CNN/WCL Distance MSE: %f' % np.mean(dist_err))
-# wcl_locs = np.array(wcl_locs)
-# mse = np.mean((wcl_locs - Y_locs)**2)
-# plt.scatter(wcl_locs[:,0], wcl_locs[:,1])
-# plt.scatter(Y_locs[:,0],Y_locs[:,1])
-# plt.scatter(receivers[:,0], receivers[:,1])
-# plt.legend(['WCL estimates','Truth','Receivers'])
-# plt.title('Distance MSE: %f, WCL Localization MSE: %f' % (np.mean(dist_err), mse))
-# plt.grid(True)
-# plt.xlabel('X-coordainte (meters)')
-# plt.ylabel('Y-coordainte (meters)')
-# plt.show()
 
 plt.scatter(Y_tr[:,0], Y_tr[:,1])
 plt.scatter(Y_te[:,0], Y_te[:,1])
@@ -751,30 +705,30 @@ plt.xlabel('X-coordainte (meters)')
 plt.ylabel('Y-coordainte (meters)')
 plt.title('Regression MSE: %s' % str(score[1]))
 plt.show()
-
-
-preds_train = model.predict(X_tr)
-
-raange = [0, 15]
-hist1, _ = np.histogram(preds_train[:,0].flatten(), bins=bins, range=raange)
-hist2, _ = np.histogram(preds[:,0].flatten(), bins=bins, range=raange)
-intersection = return_intersection(hist1, hist2)
-plt.hist([np.expand_dims(preds_train[:,0].flatten(),axis=1).tolist(), np.expand_dims(preds[:,0].flatten(),axis=1).tolist()], bins=bins, density=True, alpha=0.5)
-plt.xlabel('Position (m)')
-plt.ylabel('density')
-plt.legend(['Training Data','Testing Data'])
-plt.title('Predicted X-coordinate Histogram Intersect: % f' % intersection)
-plt.show()
-
-hist1, _ = np.histogram(preds_train[:,1].flatten(), bins=bins, range=raange)
-hist2, _ = np.histogram(preds[:,1].flatten(), bins=bins, range=raange)
-intersection = return_intersection(hist1, hist2)
-plt.hist([np.expand_dims(preds_train[:,1].flatten(),axis=1).tolist(), np.expand_dims(preds[:,1].flatten(),axis=1).tolist()], bins=bins, density=True, alpha=0.5)
-plt.xlabel('Position (m)')
-plt.ylabel('density')
-plt.legend(['Training Data','Testing Data'])
-plt.title('Predicted Y-coordinate Histogram Intersect: % f' % intersection)
-plt.show()
+#
+#
+# preds_train = model.predict(X_tr)
+#
+# raange = [0, 15]
+# hist1, _ = np.histogram(preds_train[:,0].flatten(), bins=bins, range=raange)
+# hist2, _ = np.histogram(preds[:,0].flatten(), bins=bins, range=raange)
+# intersection = return_intersection(hist1, hist2)
+# plt.hist([np.expand_dims(preds_train[:,0].flatten(),axis=1).tolist(), np.expand_dims(preds[:,0].flatten(),axis=1).tolist()], bins=bins, density=True, alpha=0.5)
+# plt.xlabel('Position (m)')
+# plt.ylabel('density')
+# plt.legend(['Training Data','Testing Data'])
+# plt.title('Predicted X-coordinate Histogram Intersect: % f' % intersection)
+# plt.show()
+#
+# hist1, _ = np.histogram(preds_train[:,1].flatten(), bins=bins, range=raange)
+# hist2, _ = np.histogram(preds[:,1].flatten(), bins=bins, range=raange)
+# intersection = return_intersection(hist1, hist2)
+# plt.hist([np.expand_dims(preds_train[:,1].flatten(),axis=1).tolist(), np.expand_dims(preds[:,1].flatten(),axis=1).tolist()], bins=bins, density=True, alpha=0.5)
+# plt.xlabel('Position (m)')
+# plt.ylabel('density')
+# plt.legend(['Training Data','Testing Data'])
+# plt.title('Predicted Y-coordinate Histogram Intersect: % f' % intersection)
+# plt.show()
 
 np.save('CNN_preds_normal',preds)
 np.save('CNN_true_normal',Y_te)
